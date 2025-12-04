@@ -1,36 +1,4 @@
-# Laboratório 05 — GraphQL vs REST (GitHub)
-
-## Guia de Instalação
-
-### Pré‑requisitos
-
-- Python 3.10+ instalado.
-- Um token pessoal do GitHub (PAT) para evitar rate limiting.
-
-### Passos
-
-- Criar e ativar ambiente virtual:
-  - macOS/Linux:
-    - `python3 -m venv .venv`
-    - `source .venv/bin/activate`
-  - Windows (PowerShell):
-    - `python -m venv .venv`
-    - `.venv\Scripts\Activate.ps1`
-- Instalar dependência:
-  - `pip install requests`
-- Configurar o token do GitHub:
-  - Edite `app/main.py` e defina `GITHUB_TOKEN` em `app/main.py:16` com seu PAT.
-  - Não versione o token. Use um token com escopos mínimos (acesso público).
-
-## Execução
-
-- Rodar o experimento:
-  - `python app/main.py`
-- Saída:
-  - Um arquivo `resultados_github_exp.csv` é gerado na raiz com colunas `Treatment`, `Latency_ms`, `Size_bytes`.
-
-Comparação controlada entre consultas REST e GraphQL na API pública do GitHub, medindo latência (ms) e tamanho do payload (bytes) em cenários simples e complexos.
-
+# Relatório Final: GraphQL vs REST
 
 ## 1. Introdução
 
