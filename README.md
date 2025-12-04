@@ -81,7 +81,7 @@ A tabela abaixo resume as estatísticas descritivas para o tempo de resposta:
 2.  **Cenário Complexo:** A diferença média foi de **-1140.20 ms**. O REST foi quase 3x mais lento. O tamanho de efeito foi **-3.25** (muito grande).
     * *Conclusão:* **Rejeita-se $H_{01}$** em favor de $H_{A1}$ para consultas complexas.
 
-> ![ImagemBoxPlot](./img/RQ01 Boxplot.png)
+> ![ImagemBoxPlot](./img/RQ01Boxplot.png)
 >
 > *A figura acima ilustra como a distribuição de tempo do REST se degrada severamente no cenário complexo.*
 
