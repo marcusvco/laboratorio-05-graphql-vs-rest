@@ -31,94 +31,137 @@
 
 Comparação controlada entre consultas REST e GraphQL na API pública do GitHub, medindo latência (ms) e tamanho do payload (bytes) em cenários simples e complexos.
 
-## Hipóteses
 
-- H01: A diferença na velocidade de resposta entre GraphQL e REST é nula.
-- HA1: Consultas GraphQL respondem significativamente mais rápido que REST.
-- H02: A diferença no tamanho da resposta (bytes) entre GraphQL e REST é nula.
-- HA2: Respostas GraphQL têm tamanho significativamente menor que REST.
+## 1. Introdução
 
-## Variáveis Dependentes
+A arquitetura REST tem sido o padrão dominante para APIs Web, baseando-se em endpoints pré-definidos para manipulação de recursos. Entretanto, a emergência do GraphQL, proposto pelo Facebook, oferece uma alternativa baseada em grafos e schemas, prometendo maior flexibilidade ao cliente.
 
-- Tempo de Resposta (ms): tempo do envio até a resposta completa (RQ1).
-- Tamanho da Resposta (bytes): tamanho do payload retornado (RQ2).
+Embora muitos sistemas realizem a migração para GraphQL, nem sempre os benefícios quantitativos (desempenho e eficiência de dados) são claros em comparação a uma implementação REST bem estabelecida.
 
-## Variáveis Independentes
+O objetivo deste experimento é avaliar quantitativamente essas diferenças através da API pública do GitHub, respondendo às seguintes perguntas de pesquisa:
 
-- Tipo de API (fator): REST vs GraphQL.
-- Complexidade da Consulta (subfator): Simples vs Complexa (profundidade/over‑fetching).
+* **RQ1:** Respostas às consultas GraphQL são mais rápidas que respostas às consultas REST?
+* **RQ2:** Respostas às consultas GraphQL têm tamanho menor que respostas às consultas REST?
 
-## Tratamentos
+### Hipóteses
 
-| Tratamento           | Tipo de API | Dados solicitados (exemplo)                        | Objetivo                                            |
-| -------------------- | ----------- | -------------------------------------------------- | --------------------------------------------------- |
-| T1: REST Simples     | REST        | Nome, Estrelas, Data de Criação                    | Under‑fetching forçado (REST tende a retornar mais) |
-| T2: GraphQL Simples  | GraphQL     | Nome, Estrelas, Data de Criação                    | Exact‑fetching (ideal)                              |
-| T3: REST Complexo    | REST        | Repo + 10 commits + 10 issues (múltiplas chamadas) | Simular under‑fetching e múltiplos round‑trips      |
-| T4: GraphQL Complexo | GraphQL     | Repo + 10 commits + 10 issues (uma chamada)        | Consolidar dados em uma única requisição            |
+Para responder às perguntas de pesquisa, definimos as seguintes hipóteses nula ($H_0$) e alternativa ($H_A$):
 
-## Objetos Experimentais
+#### RQ1 — Latência (Tempo de Resposta)
+* **$H_{01}$ (Nula):** A diferença na velocidade de resposta entre GraphQL e REST é nula.
+* **$H_{A1}$ (Alternativa):** Consultas GraphQL respondem significativamente mais rápido que REST.
 
-- API: GitHub Public API (REST e GraphQL).
-- Repositório alvo: `facebook/react` ou `torvalds/linux` (alto volume de dados).
-- Ambiente: máquina cliente com internet estável executando scripts Python.
+#### RQ2 — Tamanho do Payload
+* **$H_{02}$ (Nula):** A diferença no tamanho da resposta (bytes) entre GraphQL e REST é nula.
+* **$H_{A2}$ (Alternativa):** Respostas GraphQL têm tamanho significativamente menor que REST.
 
-## Tipo de Projeto Experimental
+---
 
-- Tipo: Quase‑Fatorial (2 fatores: Tipo de API e Complexidade).
-- Delineamento: medidas repetidas (Within‑Subject). Cada tratamento medido N vezes.
-- Aleatorização: ordem T1–T4 é aleatorizada por repetição para mitigar cache/rede.
+## 2. Metodologia
 
-## Quantidade de Medições
+Para garantir a reprodutibilidade e a validade dos dados, este estudo adotou um delineamento experimental controlado do tipo **Quase-Fatorial com Medidas Repetidas (Within-Subject)**.
 
-- Repetições: N = 50 por tratamento.
-- Total: 4 tratamentos × 50 = 200 medições.
+### 2.1. Ambiente Experimental
 
-## Análise de Resultados
+Os *trials* foram realizados no seguinte ambiente:
 
-- Validação dos dados:
-  - `resultados_github_exp.csv` contém N = 50 medições por tratamento para `facebook/react`.
-  - Os tamanhos são constantes por tratamento: `REST_SIMPLE = 6156 bytes`, `REST_COMPLEX = 113556 bytes`, `GRAPHQL_SIMPLE = 99 bytes`, `GRAPHQL_COMPLEX = 1867 bytes`.
-- Outliers e qualidade:
-  - `GRAPHQL_SIMPLE`: min = 329.52 ms, max = 1511.52 ms, p90 = 763.79 ms.
-  - `REST_SIMPLE`: min = 387.70 ms, max = 1839.82 ms, p90 = 734.59 ms.
-  - `GRAPHQL_COMPLEX`: min = 400.73 ms, max = 1654.35 ms, p90 = 811.22 ms.
-  - `REST_COMPLEX`: min = 1257.37 ms, max = 2936.03 ms, p90 = 2377.13 ms.
-  - Mantivemos todos os pontos; picos pontuais sugerem variabilidade de rede sem indicar erro sistemático.
-- Estatística descritiva (latência):
-  - `GRAPHQL_SIMPLE`: média = 544.84 ms, mediana = 406.14 ms, desvio padrão = 294.51 ms, IC95% [463.21, 626.48].
-  - `REST_SIMPLE`: média = 556.48 ms, mediana = 475.36 ms, desvio padrão = 232.17 ms, IC95% [492.13, 620.84].
-  - `GRAPHQL_COMPLEX`: média = 608.77 ms, mediana = 500.97 ms, desvio padrão = 293.67 ms, IC95% [527.37, 690.18].
-  - `REST_COMPLEX`: média = 1748.97 ms, mediana = 1595.42 ms, desvio padrão = 400.66 ms, IC95% [1637.92, 1860.03].
-- Inferência (RQ1 — tempo de resposta):
-  - Simples: diferença média (GraphQL − REST) = −11.64 ms; tamanho de efeito `d = −0.04` (negligenciável); IC95% dos grupos fortemente sobrepostos ⇒ sem evidência de diferença estatística relevante.
-  - Complexo: diferença média (GraphQL − REST) = −1140.20 ms; `d = −3.25` (efeito muito grande); IC95% não se sobrepõem ⇒ forte evidência de que GraphQL é mais rápido em consultas complexas consolidadas.
-- RQ2 — tamanho do payload:
-  - Simples: `99 bytes (GraphQL)` vs `6156 bytes (REST)` ⇒ GraphQL substancialmente menor.
-  - Complexo: `1867 bytes (GraphQL)` vs `113556 bytes (REST)` ⇒ GraphQL muito menor.
-- Ajustes recomendados (não aplicados): winsorização leve dos 5% maiores valores ou emparelhamento por índice de trial para testes pareados; resultados permanecem robustos sem tais ajustes.
+* **Máquina Cliente:** Python 3.10+ com biblioteca `requests`.
+* **Objeto Experimental:** API Pública do GitHub (v3 REST e v4 GraphQL).
+* **Alvo dos Dados:** Repositório `facebook/react` (escolhido pelo alto volume de dados, issues e commits).
+* **Rede:** Conexão de internet estável; autenticação via *GitHub Personal Access Token* (PAT).
 
-## Relatório Final
+### 2.2. Tratamentos e Variáveis
 
-- Introdução e hipóteses:
-  - H01: não há diferença de velocidade entre GraphQL e REST; HA1: GraphQL é mais rápido.
-  - H02: não há diferença de tamanho entre GraphQL e REST; HA2: GraphQL é menor.
-- Metodologia (reprodutibilidade):
-  - Delineamento quase‑fatorial, medidas repetidas, 2×2 (Tipo de API × Complexidade), N = 50 por tratamento.
-  - Ambiente: cliente Python 3.10+, internet estável, token GitHub com escopos mínimos.
-  - Objetos: API pública do GitHub; repositório `facebook/react` com alta atividade.
-  - Execução: ordem T1–T4 aleatorizada por repetição; coleta de `Latency_ms` e `Size_bytes`; geração de `resultados_github_exp.csv`.
-- Resultados:
-  - RQ1 (latência):
-    - Simples: médias próximas (`544.84 ms` vs `556.48 ms`), `d ≈ −0.04`; concluímos não haver diferença estatisticamente relevante em cenários simples.
-    - Complexo: GraphQL mais rápido por ~`1140 ms` em média (`608.77 ms` vs `1748.97 ms`), `d ≈ −3.25`; evidência forte a favor de HA1 em cenários complexos.
-  - RQ2 (tamanho):
-    - GraphQL retorna payloads substancialmente menores tanto em consultas simples quanto complexas (exacting fetching), suportando HA2.
-- Respostas estatísticas e decisão sobre hipóteses:
-  - H01: falha em rejeitar para consultas simples; rejeitar para consultas complexas (GraphQL mais rápido).
-  - H02: rejeitar; HA2 suportada (GraphQL menor) em ambos os cenários.
-- Discussão:
-  - Em consultas complexas, a capacidade de consolidar dados em uma única requisição favorece fortemente GraphQL em latência e tamanho.
-  - Em consultas simples, o overhead de montagem e transporte é similar entre APIs; diferenças ficam dentro da variabilidade da rede.
-  - Limitações: um único repositório alvo; ausência de índice de trial impede teste pareado estrito; picos de rede ocasionais.
-  - Trabalho futuro: replicar em múltiplos repositórios e janelas temporais; incluir emparelhamento por trial; avaliar impacto de paginação, compressão e cache.
+O experimento manipulou dois fatores: o **Tipo de API** (REST vs GraphQL) e a **Complexidade da Consulta** (Simples vs Complexa).
+
+| Tratamento | Descrição | Objetivo |
+| :--- | :--- | :--- |
+| **T1: REST Simples** | Requisição única de metadados do repositório (Nome, Estrelas). | Simular *Under-fetching* (REST retorna excesso de dados). |
+| **T2: GraphQL Simples** | Requisição única dos mesmos campos exatos. | Testar *Exact-fetching* em cenário trivial. |
+| **T3: REST Complexo** | Busca de Repositório + 10 últimos commits + 10 últimas issues. | Simular cenário real com múltiplos *endpoints* (N+1 requests). |
+| **T4: GraphQL Complexo** | Busca aninhada dos mesmos dados em uma única chamada. | Testar capacidade de consolidação de dados. |
+
+### 2.3. Execução
+
+Para mitigar a variabilidade da rede e evitar viés de cache, a ordem de execução dos tratamentos (T1 a T4) foi **aleatorizada** a cada iteração. Foram realizadas **50 medições (N=50)** para cada tratamento, totalizando 200 pontos de dados. As métricas coletadas foram:
+
+* **Latência ($ms$):** Tempo decorrido entre o envio da requisição e o recebimento do último byte.
+* **Tamanho ($bytes$):** Tamanho total do corpo da resposta (payload).
+
+---
+
+## 3. Resultados e Análise Estatística
+
+Os dados brutos foram processados e validados, não sendo necessária a remoção de outliers extremos, pois a variância observada foi consistente com flutuações normais de rede.
+
+### 3.1. RQ1: Latência (Tempo de Resposta)
+
+A tabela abaixo resume as estatísticas descritivas para o tempo de resposta:
+
+| Tratamento | Média (ms) | Mediana (ms) | Desvio Padrão | Intervalo Confiança (95%) |
+| :--- | :--- | :--- | :--- | :--- |
+| **GraphQL Simples** | 544.84 | 406.14 | 294.51 | [463.21, 626.48] |
+| **REST Simples** | 556.48 | 475.36 | 232.17 | [492.13, 620.84] |
+| **GraphQL Complexo** | **608.77** | **500.97** | 293.67 | [527.37, 690.18] |
+| **REST Complexo** | 1748.97 | 1595.42 | 400.66 | [1637.92, 1860.03] |
+
+**Análise Estatística:**
+
+1.  **Cenário Simples:** A diferença média entre GraphQL e REST foi de apenas **-11.64 ms**. Os intervalos de confiança de 95% se sobrepõem quase totalmente. O tamanho de efeito (Cohen's d) foi **-0.04** (negligenciável).
+    * *Conclusão:* **Falha em rejeitar $H_{01}$** para consultas simples.
+
+2.  **Cenário Complexo:** A diferença média foi de **-1140.20 ms**. O REST foi quase 3x mais lento. O tamanho de efeito foi **-3.25** (muito grande).
+    * *Conclusão:* **Rejeita-se $H_{01}$** em favor de $H_{A1}$ para consultas complexas.
+
+> **[Inserir aqui o Gráfico Boxplot do Dashboard: Latência por Complexidade]**
+>
+> *A figura acima ilustra como a distribuição de tempo do REST se degrada severamente no cenário complexo.*
+
+### 3.2. RQ2: Tamanho do Payload
+
+Os tamanhos das respostas foram constantes para cada tratamento, demonstrando a natureza determinística das APIs.
+
+| Complexidade | GraphQL (bytes) | REST (bytes) | Diferença (%) |
+| :--- | :--- | :--- | :--- |
+| **Simples** | 99 | 6.156 | GraphQL é **~98% menor** |
+| **Complexo** | 1.867 | 113.556 | GraphQL é **~98% menor** |
+
+**Análise Estatística:**
+
+Em ambos os cenários, o GraphQL retornou payloads substancialmente menores devido à sua capacidade de *Exact-fetching*, eliminando campos desnecessários que a API REST retorna por padrão.
+
+* *Conclusão:* **Rejeita-se $H_{02}$** em favor de $H_{A2}$. As respostas GraphQL são estatisticamente e praticamente menores.
+
+> **[Inserir aqui o Gráfico de Barras do Dashboard: Comparação de Tamanho em Bytes]**
+
+---
+
+## 4. Discussão Final
+
+Os resultados deste experimento controlado lançam luz sobre as reais vantagens da adoção do GraphQL.
+
+**1. O Mito da Performance Universal**
+Ao contrário do que o senso comum sugere, o GraphQL **não é intrinsecamente mais rápido** que o REST para todas as situações. No cenário de consultas simples ("Simples"), a latência foi estatisticamente idêntica. Isso ocorre porque o custo dominante nessas chamadas é o *overhead* de rede (DNS, Handshake TCP/TLS), que é agnóstico à tecnologia da API.
+
+**2. A Vantagem da Consolidação (Complexidade)**
+A grande vantagem do GraphQL manifestou-se no cenário "Complexo". Enquanto a abordagem REST exigiu múltiplas chamadas sequenciais ou o recebimento de grandes volumes de dados desnecessários (*Over-fetching*), o GraphQL permitiu buscar dados relacionais (commits e issues aninhados ao repositório) em um único *round-trip*. Essa consolidação foi responsável por uma redução de latência superior a 1 segundo em média.
+
+**3. Eficiência de Dados**
+Em relação à RQ2, o GraphQL mostrou-se superior em 100% dos casos. Para dispositivos móveis ou redes limitadas, a economia de banda (redução de ~98% no tamanho do payload) é um fator crítico de sucesso.
+
+**Conclusão Geral**
+A hipótese de que o GraphQL é superior ($H_A$) confirmou-se verdadeira principalmente para cenários de alta complexidade de dados e necessidade de eficiência de banda. Para micro-consultas simples, a escolha entre REST e GraphQL deve ser baseada mais na ergonomia de desenvolvimento e manutenção do que em performance bruta de latência.
+
+### Ameaças à Validade
+
+* **Validade Externa:** O experimento focou em um único repositório (`facebook/react`). Diferentes estruturas de dados podem gerar resultados distintos.
+* **Ambiente:** Flutuações pontuais de rede foram mitigadas pela aleatorização, mas não eliminadas.
+
+---
+## 5. Dashboard de Visualização
+
+Este relatório é acompanhado por um Dashboard interativo (Power BI) que detalha visualmente os resultados discutidos acima, incluindo:
+
+1.  **Boxplot de Latência:** Evidenciando a variabilidade e outliers do REST em cenários complexos.
+2.  **Gráfico de Interação:** Demonstrando o aumento desproporcional do tempo de resposta do REST conforme a complexidade aumenta.
+3.  **Comparativo de Tamanho:** Ilustrando a economia massiva de dados proporcionada pelo *Exact-fetching* do GraphQL.
