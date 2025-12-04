@@ -100,7 +100,7 @@ Em ambos os cenários, o GraphQL retornou payloads substancialmente menores devi
 
 * *Conclusão:* **Rejeita-se $H_{02}$** em favor de $H_{A2}$. As respostas GraphQL são estatisticamente e praticamente menores.
 
-> **[Inserir aqui o Gráfico de Barras do Dashboard: Comparação de Tamanho em Bytes]**
+> ![ImagemBoxPlot](./img/RQ02BarGraph.png)
 
 ---
 
